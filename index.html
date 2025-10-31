@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fraud Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .result.fraud {
+            background: #ffebee;
+            border: 2px solid #f44336;
+        }
+
+        .result.legitimate {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .transactions-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .transactions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .transactions-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-fraud {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-legitimate {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .qr-scanner {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .qr-upload {
+            border: 3px dashed #667eea;
+            padding: 40px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .community-reports {
+            margin-top: 20px;
+        }
+
+        .report-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ AI-Based Real-Time Fraud Detection System</h1>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('transaction')">Transaction Check</button>
+                <button class="tab-btn" onclick="showTab('qr')">QR Scanner</button>
+                <button class="tab-btn" onclick="showTab('dashboard')">Analytics Dashboard</button>
+                <button class="tab-btn" onclick="showTab('community')">Community Reports</button>
+                <button class="tab-btn" onclick="showTab('behavior')">Behavior Analysis</button>
+            </div>
+        </header>
+
+        <!-- Transaction Check Tab -->
+        <div id="transaction" class="tab-content active">
+            <h2>Real-Time Transaction Fraud Detection</h2>
+            <form id="transactionForm">
+                <div class="form-group">
+                    <label>Transaction Amount (₹)</label>
+                    <input type="number" id="amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Transaction Time</label>
+                    <input type="datetime-local" id="time" required>
+                </div>
+                <div class="form-group">
+                    <label>Merchant Name</label>
+                    <input type="text" id="merchant" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="location" placeholder="City, Country">
+                </div>
+                <div class="form-group">
+                    <label>Transaction Type</label>
+                    <select id="type">
+                        <option value="upi">UPI</option>
+                        <option value="qr">QR Code</option>
+                        <option value="card">Card</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="text" id="userId" placeholder="Enter your user ID">
+                </div>
+                <button type="submit">Analyze Transaction</button>
+            </form>
+            <div class="loading" id="transactionLoading">
+                <div class="spinner"></div>
+                <p>Analyzing transaction...</p>
+            </div>
+            <div class="result" id="transactionResult"></div>
+        </div>
+
+        <!-- QR Scanner Tab -->
+        <div id="qr" class="tab-content">
+            <h2>QR Code Legitimacy Scanner</h2>
+            <div class="qr-scanner">
+                <div class="qr-upload">
+                    <h3>Upload QR Code or Enter Data</h3>
+                    <input type="file" id="qrFile" accept="image/*" style="margin: 20px 0;">
+                    <p>OR</p>
+                    <input type="text" id="qrData" placeholder="Enter QR code data or UPI ID">
+                </div>
+                <button onclick="scanQR()">Scan QR Code</button>
+                <div class="loading" id="qrLoading">
+                    <div class="spinner"></div>
+                    <p>Scanning QR code...</p>
+                </div>
+                <div class="result" id="qrResult"></div>
+            </div>
+        </div>
+
+        <!-- Analytics Dashboard Tab -->
+        <div id="dashboard" class="tab-content">
+            <h2>Fraud Analytics Dashboard</h2>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3>Total Transactions</h3>
+                    <div class="value" id="totalTransactions">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Fraud Detected</h3>
+                    <div class="value" id="fraudDetected">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Legitimate</h3>
+                    <div class="value" id="legitimate">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Fraud Rate</h3>
+                    <div class="value" id="fraudRate">0%</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Recent Transactions</h3>
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Amount</th>
+                            <th>Merchant</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Risk Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">No transactions yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Community Reports Tab -->
+        <div id="community" class="tab-content">
+            <h2>Community Fraud Reporting</h2>
+            <form id="reportForm">
+                <div class="form-group">
+                    <label>Fraud Type</label>
+                    <select id="fraudType">
+                        <option value="fake_qr">Fake QR Code</option>
+                        <option value="phishing">Phishing Attempt</option>
+                        <option value="unauthorized">Unauthorized Transaction</option>
+                        <option value="duplicate">Duplicate Charge</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Merchant/UPI ID</label>
+                    <input type="text" id="reportMerchant" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="reportDescription" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Amount (if applicable)</label>
+                    <input type="number" id="reportAmount" step="0.01">
+                </div>
+                <button type="submit">Submit Report</button>
+            </form>
+
+            <div class="community-reports">
+                <h3>Recent Community Reports</h3>
+                <div id="reportsList"></div>
+            </div>
+        </div>
+
+        <!-- Behavior Analysis Tab -->
+        <div id="behavior" class="tab-content">
+            <h2>User Behavior Pattern Analysis</h2>
+            <form id="behaviorForm">
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="text" id="behaviorUserId" required>
+                </div>
+                <div class="form-group">
+                    <label>Time Period</label>
+                    <select id="timePeriod">
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                    </select>
+                </div>
+                <button type="submit">Analyze Behavior</button>
+            </form>
+            <div class="loading" id="behaviorLoading">
+                <div class="spinner"></div>
+                <p>Analyzing behavior patterns...</p>
+            </div>
+            <div class="result" id="behaviorResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // API endpoint - change this to your backend URL
+        const API_URL = 'http://localhost:5000';
+
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Initialize datetime
+        document.getElementById('time').valueAsNumber = Date.now() - (new Date().getTimezoneOffset() * 60000);
+
+        // Transaction Form Handler
+        document.getElementById('transactionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const loading = document.getElementById('transactionLoading');
+            const result = document.getElementById('transactionResult');
+            
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            const data = {
+                amount: parseFloat(document.getElementById('amount').value),
+                time: document.getElementById('time').value,
+                merchant: document.getElementById('merchant').value,
+                location: document.getElementById('location').value,
+                type: document.getElementById('type').value,
+                userId: document.getElementById('userId').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/check-transaction`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const resultData = await response.json();
+                
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = `result ${resultData.is_fraud ? 'fraud' : 'legitimate'}`;
+                
+                result.innerHTML = `
+                    <h3>${resultData.is_fraud ? '⚠️ FRAUD DETECTED' : '✅ LEGITIMATE TRANSACTION'}</h3>
+                    <p><strong>Risk Score:</strong> ${(resultData.risk_score * 100).toFixed(2)}%</p>
+                    <p><strong>Confidence:</strong> ${(resultData.confidence * 100).toFixed(2)}%</p>
+                    <p><strong>Reason:</strong> ${resultData.reason}</p>
+                    ${resultData.recommendations ? `<p><strong>Recommendations:</strong> ${resultData.recommendations}</p>` : ''}
+                `;
+
+                updateDashboard();
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result fraud';
+                result.innerHTML = `<h3>Error</h3><p>Could not connect to server. Please ensure backend is running.</p>`;
+            }
+        });
+
+        // QR Scanner
+        async function scanQR() {
+            const loading = document.getElementById('qrLoading');
+            const result = document.getElementById('qrResult');
+            const qrData = document.getElementById('qrData').value;
+            
+            if (!qrData) {
+                alert('Please enter QR code data or UPI ID');
+                return;
+            }
+
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/api/scan-qr`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ qr_data: qrData })
+                });
+                
+                const resultData = await response.json();
+                
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = `result ${resultData.is_legitimate ? 'legitimate' : 'fraud'}`;
+                
+                result.innerHTML = `
+                    <h3>${resultData.is_legitimate ? '✅ VERIFIED MERCHANT' : '⚠️ SUSPICIOUS QR CODE'}</h3>
+                    <p><strong>Merchant:</strong> ${resultData.merchant_name}</p>
+                    <p><strong>Trust Score:</strong> ${(resultData.trust_score * 100).toFixed(2)}%</p>
+                    <p><strong>Analysis:</strong> ${resultData.analysis}</p>
+                    ${resultData.warnings ? `<p style="color: red;"><strong>Warnings:</strong> ${resultData.warnings}</p>` : ''}
+                `;
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result fraud';
+                result.innerHTML = `<h3>Error</h3><p>Could not connect to server.</p>`;
+            }
+        }
+
+        // Community Report Form
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                fraud_type: document.getElementById('fraudType').value,
+                merchant: document.getElementById('reportMerchant').value,
+                description: document.getElementById('reportDescription').value,
+                amount: parseFloat(document.getElementById('reportAmount').value) || 0
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/community-report`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                alert(result.message);
+                document.getElementById('reportForm').reset();
+                loadCommunityReports();
+            } catch (error) {
+                alert('Could not submit report. Please try again.');
+            }
+        });
+
+        // Behavior Analysis Form
+        document.getElementById('behaviorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const loading = document.getElementById('behaviorLoading');
+            const result = document.getElementById('behaviorResult');
+            
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            const data = {
+                user_id: document.getElementById('behaviorUserId').value,
+                time_period: document.getElementById('timePeriod').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/analyze-behavior`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const resultData = await response.json();
+                
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = `result ${resultData.risk_level === 'high' ? 'fraud' : 'legitimate'}`;
+                
+                result.innerHTML = `
+                    <h3>Behavior Analysis Results</h3>
+                    <p><strong>Risk Level:</strong> ${resultData.risk_level.toUpperCase()}</p>
+                    <p><strong>Transaction Count:</strong> ${resultData.transaction_count}</p>
+                    <p><strong>Average Amount:</strong> ₹${resultData.avg_amount.toFixed(2)}</p>
+                    <p><strong>Unusual Patterns:</strong> ${resultData.unusual_patterns}</p>
+                    <p><strong>Analysis:</strong> ${resultData.analysis}</p>
+                `;
+            } catch (error) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                result.className = 'result fraud';
+                result.innerHTML = `<h3>Error</h3><p>Could not connect to server.</p>`;
+            }
+        });
+
+        // Load Dashboard Stats
+        async function updateDashboard() {
+            try {
+                const response = await fetch(`${API_URL}/api/dashboard-stats`);
+                const stats = await response.json();
+                
+                document.getElementById('totalTransactions').textContent = stats.total_transactions;
+                document.getElementById('fraudDetected').textContent = stats.fraud_detected;
+                document.getElementById('legitimate').textContent = stats.legitimate;
+                document.getElementById('fraudRate').textContent = stats.fraud_rate + '%';
+                
+                // Update transactions table
+                const tbody = document.getElementById('transactionsTableBody');
+                if (stats.recent_transactions.length > 0) {
+                    tbody.innerHTML = stats.recent_transactions.map(t => `
+                        <tr>
+                            <td>${new Date(t.time).toLocaleString()}</td>
+                            <td>₹${t.amount.toFixed(2)}</td>
+                            <td>${t.merchant}</td>
+                            <td>${t.type.toUpperCase()}</td>
+                            <td><span class="status-badge status-${t.status}">${t.status}</span></td>
+                            <td>${(t.risk_score * 100).toFixed(1)}%</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Could not load dashboard stats');
+            }
+        }
+
+        // Load Community Reports
+        async function loadCommunityReports() {
+            try {
+                const response = await fetch(`${API_URL}/api/community-reports`);
+                const reports = await response.json();
+                
+                const reportsList = document.getElementById('reportsList');
+                if (reports.length > 0) {
+                    reportsList.innerHTML = reports.map(r => `
+                        <div class="report-item">
+                            <strong>${r.fraud_type.replace('_', ' ').toUpperCase()}</strong>
+                            <p>Merchant: ${r.merchant}</p>
+                            <p>${r.description}</p>
+                            <small>${new Date(r.timestamp).toLocaleString()}</small>
+                        </div>
+                    `).join('');
+                } else {
+                    reportsList.innerHTML = '<p>No reports yet.</p>';
+                }
+            } catch (error) {
+                console.error('Could not load community reports');
+            }
+        }
+
+        // Initialize
+        updateDashboard();
+        loadCommunityReports();
+        
+        // Refresh dashboard every 30 seconds
+        setInterval(updateDashboard, 30000);
+    </script>
+</body>
+</html>
